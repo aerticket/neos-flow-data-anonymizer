@@ -2,7 +2,7 @@
   "name": "aerticket/data-anonymizer",
   "type": "neos-package",
   "description": "Anonymize sensitive data in your models via annotations",
-  "homepage": "https://github.com/aerticket/neos-flow-dataanonymizer",
+  "homepage": "https://github.com/aerticket/neos-flow-data-anonymizer",
   "license": "MIT",
   "authors": [
     {
