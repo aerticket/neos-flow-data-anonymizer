@@ -121,17 +121,24 @@ class AnonymizationService
         $anonymizedPropertyValues = $this->getAnonymizedPropertyValuesFor($className);
 
         // Build property constraints to retrieve only non anonymized entities
-        $constraints = [];
+        $propertyConstraints = [];
         foreach ($anonymizedPropertyValues as $propertyName => $propertyValue) {
-            $constraints[] = $query->logicalNot($query->equals($propertyName, $propertyValue));
+            $propertyConstraints[] = $query->equals($propertyName, $propertyValue);
         }
 
         // Only objects with a referenceDate before the anonymizeAfterDate should be anonymized
         $anonymizeAfter = $entityAnnotation->anonymizeAfter ?: $this->defaults['anonymizeAfter'];
         $anonymizeAfterDate = new \DateTime($anonymizeAfter . ' ago');
-        $constraints[] = $query->lessThan($entityAnnotation->referenceDate, $anonymizeAfterDate);
 
-        $query->matching($query->logicalAnd($constraints));
+        $query->matching(
+            $query->logicalAnd(
+                $query->logicalNot(
+                    $query->logicalAnd($propertyConstraints)
+                ),
+                $query->lessThan($entityAnnotation->referenceDate, $anonymizeAfterDate)
+            )
+        );
+
         $total = $query->count();
 
         $query->setLimit($limit);
