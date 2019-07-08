@@ -1,5 +1,5 @@
 {
-  "name": "aerticket/dataanonymizer",
+  "name": "aerticket/data-anonymizer",
   "type": "neos-package",
   "description": "Anonymize sensitive data in your models via annotations",
   "homepage": "https://github.com/aerticket/neos-flow-dataanonymizer",
