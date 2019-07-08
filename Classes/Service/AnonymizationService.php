@@ -52,21 +52,17 @@ class AnonymizationService
     protected $defaults;
 
     /**
-     * @param string $className The class name of the model
+     * @param $className
      * @return Repository
+     * @throws \Exception
      */
     protected function getRepositoryFor($className)
     {
-        if ($this->repositoryClassNames === null) {
-            $this->repositoryClassNames = $this->reflectionService->getAllSubClassNamesForClass(Repository::class);
-        }
-
-        foreach ($this->repositoryClassNames as $repositoryClassName) {
+        $repositoryClassName = $this->reflectionService->getClassSchema($className)->getRepositoryClassName();
+        if ($repositoryClassName !== null) {
             /** @var Repository $repository */
             $repository = $this->objectManager->get($repositoryClassName);
-            if ($repository->getEntityClassName() === $className) {
-                return $repository;
-            }
+            return $repository;
         }
         throw new \Exception(sprintf('No repository found for entity class "%s"', $className));
     }
