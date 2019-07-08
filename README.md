@@ -39,6 +39,15 @@ The referenceDate option of the class annotation is mandatory. It is the path to
 is used to determine the age of the entity. You can use the same syntax as a query condition (e.g.
 `relatedObject.anotherRelatedObject.creationDate`).
 
+To actually trigger the anonymization process, you have to call the following flow command:
+
+```bash
+./flow anonymize:run 
+```
+
+Please note that a maximum number of 100 entities is anonymized per class and run. If more entities have to be
+anonymized, you have to run the command several times.
+
 ## Configuration options
 
 ### Age
@@ -52,7 +61,7 @@ Aerticket:
       anonymizeAfter: '30 days'
 ```
 
-If you want to override the age for a specific class, you can use the `anonymizeAfter` option of the `AnonymizableEntity`
+If you want to override this value for a specific class, you can use the `anonymizeAfter` option of the `AnonymizableEntity`
 annotation.
 
 ### Anonymized values
