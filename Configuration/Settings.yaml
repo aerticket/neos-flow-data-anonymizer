@@ -1,0 +1,9 @@
+Aerticket:
+  DataAnonymizer:
+    defaults:
+      anonymizeAfter: '30 days'
+      anonymizedValues:
+        'fallback': null
+        'string': 'Anonymized'
+        'integer': 0
+
