@@ -21,6 +21,7 @@ use Neos\Flow\Persistence\Repository;
 use Neos\Flow\Reflection\ReflectionService;
 use Neos\Flow\Annotations as Flow;
 use Neos\Utility\ObjectAccess;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class AnonymizationService
@@ -50,6 +51,11 @@ class AnonymizationService
      * @Flow\InjectConfiguration(path="defaults")
      */
     protected $defaults;
+
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
 
     /**
      * @param $className
@@ -108,6 +114,8 @@ class AnonymizationService
      */
     public function anonymize($className, $limit = 100)
     {
+        $this->logger->debug(sprintf('Anonymizing entites of class %s', $className));
+
         $repository = $this->getRepositoryFor($className);
         $objects = $repository->findAll();
         $query = $objects->getQuery();
@@ -137,6 +145,13 @@ class AnonymizationService
 
         $total = $query->count();
 
+        if ($total === 0) {
+            $this->logger->info(sprintf('No entities to anonymize for class %s', $className));
+            return;
+        }
+
+        $this->logger->info(sprintf('%s entites to anonymize for class %s', $total, $className));
+
         $query->setLimit($limit);
         $query->setOrderings([$entityAnnotation->referenceDate => QueryInterface::ORDER_ASCENDING]);
         $matchingObjects = $query->execute();
@@ -148,9 +163,6 @@ class AnonymizationService
             }
         }
 
-        return [
-            'processed' => count($matchingObjects),
-            'total' => $total,
-        ];
+        $this->logger->info(sprintf('%s of %s entities have been anonymized in this run.', count($matchingObjects), $total));
     }
 }

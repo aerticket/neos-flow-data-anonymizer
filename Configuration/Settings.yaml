@@ -7,3 +7,17 @@ Aerticket:
         'string': 'Anonymized'
         'integer': 0
 
+
+Neos:
+  Flow:
+    log:
+      aerticketDataAnonymizerLogger:
+        logger: Neos\Flow\Log\Logger
+        backend: Neos\Flow\Log\Backend\FileBackend
+        backendOptions:
+          logFileURL: '%FLOW_PATH_DATA%Logs/DataAnonymizer.log'
+          createParentDirectories: true
+          severityThreshold: '%LOG_INFO%'
+          maximumLogFileSize: 10485760
+          logFilesToKeep: 1
+          logMessageOrigin: false

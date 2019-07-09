@@ -34,13 +34,14 @@ class AnonymizeCommandController extends CommandController
      */
     public function runCommand()
     {
-        $this->outputLine('Anonymizing all entities that exceed their maximum age');
+        $this->outputLine('Anonymizing all entities that exceed their maximum age. Please see log for details.');
         $classNames = $this->anonymizationService->getAnonymizableClassNames();
 
         foreach ($classNames as $className) {
             $this->outputLine('Processing entities of type "%s"...', [$className]);
-            $statistics = $this->anonymizationService->anonymize($className);
-            $this->outputLine('Anonymized %s / %s expired entities.', [$statistics['processed'], $statistics['total']]);
+            $this->anonymizationService->anonymize($className);
         }
+
+        $this->outputLine('Done.');
     }
 }
