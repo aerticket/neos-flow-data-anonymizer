@@ -6,7 +6,7 @@ Aerticket:
         'fallback': null
         'string': 'Anonymized'
         'integer': 0
-
+        'array': null
 
 Neos:
   Flow:
