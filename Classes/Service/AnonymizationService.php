@@ -158,9 +158,13 @@ class AnonymizationService
 
         foreach ($matchingObjects as $object) {
             foreach ($anonymizedPropertyValues as $propertyName => $propertyValue) {
-                ObjectAccess::setProperty($object, $propertyName, $propertyValue);
-                $repository->update($object);
+                if (ObjectAccess::isPropertySettable($object, $propertyName)) {
+                    ObjectAccess::setProperty($object, $propertyName, $propertyValue);
+                } else {
+                    ObjectAccess::setProperty($object, $propertyName, $propertyValue, true);
+                }
             }
+            $repository->update($object);
         }
 
         $this->logger->info(sprintf('%s of %s entities have been anonymized in this run.', count($matchingObjects), $total));
