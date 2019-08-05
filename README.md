@@ -53,7 +53,7 @@ If you need to manually trigger data anonymization (e.g. user data that can be c
 ```php
 $this->anonymizationService->anonymizeEntity($record);
 ```
-You can work on not (yet) persisted objects as well by avoiding an update of the record in it's repository with the second parameter to `anonymizeEntity`.
+You can work on not (yet) persisted objects as well by avoiding an update of the record in its repository with the second parameter to `anonymizeEntity`.
 
 ## Configuration options
 
