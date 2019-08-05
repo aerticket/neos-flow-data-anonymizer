@@ -100,12 +100,7 @@ class AnonymizationService
      */
     protected function isAnonymizable($className)
     {
-        /** @var AnonymizableEntity $annotation */
-        $annotation = $this->reflectionService->getClassAnnotation($className, AnonymizableEntity::class);
-        if ($annotation === null) {
-            return false;
-        }
-        return count($this->getAnonymizedPropertyValuesFor($className)) > 0;
+        return in_array($className, $this->getAnonymizableClassNames());
     }
 
     /**
@@ -116,7 +111,10 @@ class AnonymizationService
     public function getAnonymizableClassNames()
     {
         $classNames = $this->reflectionService->getClassNamesByAnnotation(AnonymizableEntity::class);
-        return array_filter($classNames, [$this, 'isAnonymizable']);
+        return array_filter($classNames, function($className) {
+            // Only process this className if at least one property should be anonymized
+            return count($this->getAnonymizedPropertyValuesFor($className)) > 0;
+        });
     }
 
     /**
