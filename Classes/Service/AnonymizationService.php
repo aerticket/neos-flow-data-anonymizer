@@ -61,7 +61,7 @@ class AnonymizationService
     /**
      * @param string $className
      * @return Repository
-     * @throws \Exception
+     * @throws AnonymizationException Thrown if no repository associated with the given class name was found
      */
     protected function getRepositoryFor($className)
     {
@@ -71,7 +71,7 @@ class AnonymizationService
             $repository = $this->objectManager->get($repositoryClassName);
             return $repository;
         }
-        throw new \Exception(sprintf('No repository found for entity class "%s"', $className));
+        throw new AnonymizationException(sprintf('No repository found for entity class "%s"', $className), 1565020952);
     }
 
     /**
