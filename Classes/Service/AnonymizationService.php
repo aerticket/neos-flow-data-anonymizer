@@ -15,7 +15,10 @@ namespace Aerticket\DataAnonymizer\Service;
 
 use Aerticket\DataAnonymizer\Annotations\AnonymizableEntity;
 use Aerticket\DataAnonymizer\Annotations\Anonymize;
+use Aerticket\DataAnonymizer\AnonymizationException;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
+use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
+use Neos\Flow\Persistence\Exception\UnknownObjectException;
 use Neos\Flow\Persistence\QueryInterface;
 use Neos\Flow\Persistence\Repository;
 use Neos\Flow\Reflection\ReflectionService;
@@ -58,9 +61,9 @@ class AnonymizationService
     protected $logger;
 
     /**
-     * @param $className
+     * @param string $className
      * @return Repository
-     * @throws \Exception
+     * @throws AnonymizationException Thrown if no repository associated with the given class name was found
      */
     protected function getRepositoryFor($className)
     {
@@ -70,11 +73,11 @@ class AnonymizationService
             $repository = $this->objectManager->get($repositoryClassName);
             return $repository;
         }
-        throw new \Exception(sprintf('No repository found for entity class "%s"', $className));
+        throw new AnonymizationException(sprintf('No repository found for entity class "%s"', $className), 1565020952);
     }
 
     /**
-     * @param $className
+     * @param string $className
      * @return array
      */
     protected function getAnonymizedPropertyValuesFor($className)
@@ -92,6 +95,17 @@ class AnonymizationService
     }
 
     /**
+     * Check whether a class is properly annotated as AnonymizableEntity and has anonymizable properties
+     *
+     * @param string $className
+     * @return bool
+     */
+    protected function isAnonymizable($className)
+    {
+        return in_array($className, $this->getAnonymizableClassNames());
+    }
+
+    /**
      * Return all class names that can be anonymized (i.e. proper annotation and at least one anonymizable property)
      *
      * @return array
@@ -106,22 +120,58 @@ class AnonymizationService
     }
 
     /**
+     * Anonymize a given entity.
+     *
+     * @param object $entity
+     * @param bool $update Whether to update the anonymized entity in it's repository
+     * @return object The anonymized entity
+     * @throws AnonymizationException
+     * @throws IllegalObjectTypeException
+     * @throws UnknownObjectException
+     */
+    public function anonymizeEntity($entity, $update = true)
+    {
+        $className = get_class($entity);
+        if (!$this->isAnonymizable($className)) {
+            throw new AnonymizationException(
+                sprintf('The class %s is not annotated as %s or does not have any anonymizable properties.', $className, AnonymizableEntity::class),
+                1563899393
+            );
+        }
+        $anonymizedPropertyValues = $this->getAnonymizedPropertyValuesFor($className);
+        $this->anonymizeProperties($entity, $anonymizedPropertyValues);
+        if ($update) {
+            $repository = $this->getRepositoryFor($className);
+            $repository->update($entity);
+        }
+        return $entity;
+    }
+
+    /**
      * Anonymize all entities of a given class name that exceed their maximum age
      *
      * @param string $className The class name of the entities that should be anonymized
      * @param int $limit Anonymize only this number of entities per entity class and run
      * @throws \Neos\Flow\Persistence\Exception\InvalidQueryException
+     * @throws AnonymizationException
      */
     public function anonymize($className, $limit = 100)
     {
+        /** @var AnonymizableEntity $entityAnnotation */
+        $entityAnnotation = $this->reflectionService->getClassAnnotation($className, AnonymizableEntity::class);
+        if ($entityAnnotation === null) {
+            throw new AnonymizationException(
+                sprintf('The class %s is not annotated as %s. Maybe you are missing an import.', $className, AnonymizableEntity::class),
+                1563899363
+                );
+        }
+
         $this->logger->debug(sprintf('Anonymizing entites of class %s', $className));
 
         $repository = $this->getRepositoryFor($className);
         $objects = $repository->findAll();
         $query = $objects->getQuery();
 
-        /** @var AnonymizableEntity $entityAnnotation */
-        $entityAnnotation = $this->reflectionService->getClassAnnotation($className, AnonymizableEntity::class);
         $anonymizedPropertyValues = $this->getAnonymizedPropertyValuesFor($className);
 
         // Build property constraints to retrieve only non anonymized entities
@@ -157,16 +207,27 @@ class AnonymizationService
         $matchingObjects = $query->execute();
 
         foreach ($matchingObjects as $object) {
-            foreach ($anonymizedPropertyValues as $propertyName => $propertyValue) {
-                if (ObjectAccess::isPropertySettable($object, $propertyName)) {
-                    ObjectAccess::setProperty($object, $propertyName, $propertyValue);
-                } else {
-                    ObjectAccess::setProperty($object, $propertyName, $propertyValue, true);
-                }
-            }
+            $this->anonymizeProperties($object, $anonymizedPropertyValues);
             $repository->update($object);
         }
 
         $this->logger->info(sprintf('%s of %s entities have been anonymized in this run.', count($matchingObjects), $total));
+    }
+
+    /**
+     * Actually anonymizes the properties of a given entity
+     *
+     * @param object $object An entity
+     * @param array $propertyValues Values as determined by {@see getAnonymizedPropertyValuesFor}
+     */
+    protected function anonymizeProperties($object, $propertyValues)
+    {
+        foreach ($propertyValues as $propertyName => $propertyValue) {
+            if (ObjectAccess::isPropertySettable($object, $propertyName)) {
+                ObjectAccess::setProperty($object, $propertyName, $propertyValue);
+            } else {
+                ObjectAccess::setProperty($object, $propertyName, $propertyValue, true);
+            }
+        }
     }
 }

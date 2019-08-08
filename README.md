@@ -48,6 +48,13 @@ To actually trigger the anonymization process, you have to call the following fl
 Please note that a maximum number of 100 entities is anonymized per class and run. If more entities have to be
 anonymized, you have to run the command several times.
 
+## Anonymize given entities
+If you need to manually trigger data anonymization (e.g. user data that can be cleared after having been processed), you can explicitly anonymize a given entity:
+```php
+$this->anonymizationService->anonymizeEntity($record);
+```
+You can work on not (yet) persisted objects as well by avoiding an update of the record in its repository with the second parameter to `anonymizeEntity`.
+
 ## Configuration options
 
 ### Age
