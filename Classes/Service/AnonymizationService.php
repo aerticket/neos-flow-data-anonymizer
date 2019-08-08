@@ -17,6 +17,8 @@ use Aerticket\DataAnonymizer\Annotations\AnonymizableEntity;
 use Aerticket\DataAnonymizer\Annotations\Anonymize;
 use Aerticket\DataAnonymizer\AnonymizationException;
 use Neos\Flow\ObjectManagement\ObjectManagerInterface;
+use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
+use Neos\Flow\Persistence\Exception\UnknownObjectException;
 use Neos\Flow\Persistence\QueryInterface;
 use Neos\Flow\Persistence\Repository;
 use Neos\Flow\Reflection\ReflectionService;
@@ -124,6 +126,8 @@ class AnonymizationService
      * @param bool $update Whether to update the anonymized entity in it's repository
      * @return object The anonymized entity
      * @throws AnonymizationException
+     * @throws IllegalObjectTypeException
+     * @throws UnknownObjectException
      */
     public function anonymizeEntity($entity, $update = true)
     {
@@ -137,12 +141,8 @@ class AnonymizationService
         $anonymizedPropertyValues = $this->getAnonymizedPropertyValuesFor($className);
         $this->anonymizeProperties($entity, $anonymizedPropertyValues);
         if ($update) {
-            try {
-                $repository = $this->getRepositoryFor($className);
-                $repository->update($entity);
-            } catch (\Exception $e) {
-                throw new AnonymizationException('Could not determine a repository for the given entity', 1563899697, $e);
-            }
+            $repository = $this->getRepositoryFor($className);
+            $repository->update($entity);
         }
         return $entity;
     }
