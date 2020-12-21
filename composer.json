@@ -1,20 +1,25 @@
 {
-  "name": "aerticket/data-anonymizer",
-  "type": "neos-package",
-  "description": "Anonymize sensitive data in your models via annotations",
-  "homepage": "https://github.com/aerticket/neos-flow-data-anonymizer",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Thomas Heilmann"
+    "name": "aerticket/data-anonymizer",
+    "type": "neos-package",
+    "description": "Anonymize sensitive data in your models via annotations",
+    "homepage": "https://github.com/aerticket/neos-flow-data-anonymizer",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Thomas Heilmann"
+        }
+    ],
+    "require": {
+        "neos/flow": "^5.0 || ^6.0 || ^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Aerticket\\DataAnonymizer\\": "Classes/"
+        }
+    },
+    "extra": {
+        "applied-flow-migrations": [
+            "TYPO3.Form-20160601101500"
+        ]
     }
-  ],
-  "require": {
-    "neos/flow": "^5.0 || ^6.0 || ^7.0"
-  },
-  "autoload": {
-    "psr-4": {
-      "Aerticket\\DataAnonymizer\\": "Classes/"
-    }
-  }
 }
