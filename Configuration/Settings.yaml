@@ -11,13 +11,15 @@ Aerticket:
 Neos:
   Flow:
     log:
-      aerticketDataAnonymizerLogger:
-        logger: Neos\Flow\Log\Logger
-        backend: Neos\Flow\Log\Backend\FileBackend
-        backendOptions:
-          logFileURL: '%FLOW_PATH_DATA%Logs/DataAnonymizer.log'
-          createParentDirectories: true
-          severityThreshold: '%LOG_INFO%'
-          maximumLogFileSize: 10485760
-          logFilesToKeep: 1
-          logMessageOrigin: false
+      psr3:
+        Neos\Flow\Log\PsrLoggerFactory:
+          aerticketDataAnonymizerLogger:
+            default:
+              class: Neos\Flow\Log\Backend\FileBackend
+              options:
+                createParentDirectories: true
+                logFileURL: '%FLOW_PATH_DATA%Logs/DataAnonymizer.log'
+                severityThreshold: '%LOG_DEBUG%'
+                maximumLogFileSize: 10485760
+                logFilesToKeep: 1
+                logMessageOrigin: false
